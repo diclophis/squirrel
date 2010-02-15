@@ -16,3 +16,5 @@ gem install hpricot
 gem install plist
 gem install ruby-openid
 gem install json
+gem install mysql -- --with-mysql-config
+gem install unicorn
