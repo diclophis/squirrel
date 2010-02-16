@@ -4,6 +4,7 @@ gem install tzinfo builder memcache-client rack rack-test rack-mount erubis mail
 sudo gem install camping
 gem install rack-mount -v 0.4.0
 sudo gem install rake -v 0.8.3
+gem install railties --pre
 gem install rails --pre
 gem install rmagick
 gem install RedCloth
