@@ -20,6 +20,12 @@ map "http://veejay.tv/" do
   run Veejaytv::Application
 end
 =end
+map "http://veejay.tv/" do
+  Dir.chdir(HOME + "/veejaytv/")
+  #use Rack::Static, :urls => ["/"], :root => HOME + "/veejaytv/public"
+  require HOME + "/veejaytv/config/environment"
+  run Veejaytv::Application
+end
 
 map "http://risingcode.com/" do
   require HOME + "/risingcode/risingcode"
@@ -29,4 +35,3 @@ map "http://risingcode.com/" do
   use Rack::Static, :urls => ["/stylesheets", "/images"], :root => HOME + "/risingcode/public"
   run Rack::Adapter::Camping.new(RisingCode)
 end
-
