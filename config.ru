@@ -1,9 +1,6 @@
 #!/usr/bin/env ruby
 
-HOME = "/home/ubuntu"
-
-require "camping_response_headers_fix"
-require "rack_proctitle"
+HOME = "/home/jbardin"
 
 =begin
 map "http://cloudcollect.com/" do
@@ -20,18 +17,23 @@ map "http://veejay.tv/" do
   run Veejaytv::Application
 end
 =end
+
+=begin
 map "http://veejay.tv/" do
   Dir.chdir(HOME + "/veejaytv/")
   #use Rack::Static, :urls => ["/"], :root => HOME + "/veejaytv/public"
   require HOME + "/veejaytv/config/environment"
   run Veejaytv::Application
 end
+=end
 
 map "http://risingcode.com/" do
-  require HOME + "/risingcode/risingcode"
-  require HOME + "/risingcode/boot"
-  use CampingResponseHeadersFix
-  use RackProctitle, :prefix => "risingcode"
-  use Rack::Static, :urls => ["/stylesheets", "/images"], :root => HOME + "/risingcode/public"
-  run Rack::Adapter::Camping.new(RisingCode)
+  require HOME + "/risingcode.com/risingcode"
+  require HOME + "/risingcode.com/boot"
+  use Rack::StaticCache, :urls => ["/favicon.ico", "/stylesheets", "/images", "/javascripts", "/webgl"], :root => HOME + "/risingcode/public"
+  run RisingCode
+end
+
+map "http://emscripten.risingcode.com/" do
+  run Rack::Directory.new(HOME + "/emscripten.risingcode.com/public")
 end

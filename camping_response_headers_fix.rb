@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+=begin
 class CampingResponseHeadersFix
   def initialize(app)
     @app = app
@@ -11,3 +12,4 @@ class CampingResponseHeadersFix
     res
   end
 end
+=end
