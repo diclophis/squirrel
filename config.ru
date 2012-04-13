@@ -2,14 +2,18 @@
 
 HOME = "/home/jbardin"
 
+
 use Rack::Deflater
 
 # require 'rack/cache'
 # use Rack::Cache, :default_ttl => 30, :allow_revalidate => false, :allow_reload => false
 
 map "http://risingcode.com/" do
+  require 'rack/contrib'
+  require 'rack/contrib/backstage'
   require HOME + "/risingcode.com/risingcode"
   require HOME + "/risingcode.com/boot"
+  use Rack::Backstage, "risingcode.html"
   use Rack::StaticCache, :urls => ["/favicon.ico", "/stylesheets", "/images", "/javascripts", "/webgl"], :root => HOME + "/risingcode.com/public"
   run RisingCode
 end
