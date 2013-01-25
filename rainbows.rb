@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-worker_processes 4
+worker_processes 1
 #rewindable_input false
 
 #Rainbows! do

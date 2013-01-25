@@ -91,6 +91,8 @@ class Rack::Proxy
     sub_request["X-Requested-With"] = req.env['HTTP_X_REQUESTED_WITH'] if req.env['HTTP_X_REQUESTED_WITH']
     sub_request["Accept-Encoding"] = req.accept_encoding
     sub_request["Referer"] = req.referer
+    sub_request["Host"] = req.host
+    sub_request["Cookie"] = env["HTTP_COOKIE"]
     sub_request.basic_auth *uri.userinfo.split(':') if (uri.userinfo && uri.userinfo.index(':'))
 
     sub_response = Net::HTTP.start(uri.host, uri.port) do |http|
@@ -99,7 +101,8 @@ class Rack::Proxy
 
     headers = {}
     sub_response.each_header do |k,v|
-      headers[k] = v unless k.to_s =~ /cookie|content-length|transfer-encoding/i
+      #headers[k] = v unless k.to_s =~ /cookie|content-length|transfer-encoding/i
+      headers[k] = v unless k.to_s =~ /content-length|transfer-encoding/i
     end
 
     [sub_response.code.to_i, headers, [sub_response.read_body]]
