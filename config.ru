@@ -6,6 +6,14 @@ require 'rack/contrib/backstage'
 HOME = "/home/jbardin"
 
 module Rack
+class Lint
+def call(env = nil)
+@app.call(env)
+end
+end
+end
+
+module Rack
   class TripleDubRedirect
     def initialize(app)
       @app = app
@@ -73,6 +81,7 @@ class Rack::Proxy
   end
 
   def call(env)
+    puts env.inspect
     req = Rack::Request.new(env)
     method = req.request_method.downcase
     method[0..0] = method[0..0].upcase
@@ -156,6 +165,16 @@ end
 map "http://ctr.risingcode.com/" do
   use Rack::Deflater
   run Rack::Directory.new(HOME + "/ctr.risingcode.com/public")
+end
+
+map "http://grid.risingcode.com/" do
+  #use Rack::Deflater
+  run Rack::Directory.new(HOME + "/grid.risingcode.com/public")
+end
+
+map "http://nyc.risingcode.com/" do
+  use Rack::Deflater
+  run Rack::Directory.new(HOME + "/bookmarks/public")
 end
 
 map "http://aod.risingcode.com/" do
