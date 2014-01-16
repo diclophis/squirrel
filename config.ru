@@ -3,7 +3,7 @@
 require 'rack/contrib'
 require 'rack/contrib/backstage'
 
-HOME = "/home/jbardin"
+HOME = "/home/ubuntu"
 
 module Rack
 class Lint
@@ -130,7 +130,6 @@ class Rack::Proxy
 end
 
 
-
 map "http://risingcode.com/" do
   run Proc.new { |env|
     request = Rack::Request.new(env)
@@ -157,6 +156,12 @@ end
 map "http://nocomply.risingcode.com/" do
   run Rack::Directory.new(HOME + "/nocomply.risingcode.com/public")
 end
+
+#map "http://ec2-54-242-141-77.compute-1.amazonaws.com/" do
+#  use Rack::Deflater
+#  use Rack::StaticCache, :urls => ["/assets", "raptor_island.js", "index.html"], :root => HOME + "/emscripten.risingcode.com/public", :duration => (30.0 / (60.0 * 60.0 * 24.0 * 365.0))
+#  run Rack::Directory.new(HOME + "/emscripten.risingcode.com/public")
+#end
 
 map "http://emscripten.risingcode.com/" do
   use Rack::Deflater

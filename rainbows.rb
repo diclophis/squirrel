@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 worker_processes 1
-rewindable_input false
+rewindable_input true
 
 Rainbows! do
   use :FiberSpawn
