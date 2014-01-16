@@ -25,7 +25,7 @@ module Rack
       unless request.host.start_with?("www.")
         [301, {
           'Content-Type' => "text/plain",
-          "Location" => request.url.sub("//www.", "//")
+          "Location" => request.url.sub("//", "//www.")
         }, self]
       else
         @app.call(env)
@@ -81,7 +81,6 @@ class Rack::Proxy
   end
 
   def call(env)
-    puts env.inspect
     req = Rack::Request.new(env)
     method = req.request_method.downcase
     method[0..0] = method[0..0].upcase
@@ -104,17 +103,29 @@ class Rack::Proxy
     sub_request["Cookie"] = env["HTTP_COOKIE"]
     sub_request.basic_auth *uri.userinfo.split(':') if (uri.userinfo && uri.userinfo.index(':'))
 
-    sub_response = Net::HTTP.start(uri.host, uri.port) do |http|
-      http.request(sub_request)
-    end
+    repeat = 3
+    last_exception = nil
+    repeat.times { |i|
+      sleep 10 if i > 0
+      begin
+        sub_response = Net::HTTP.start(uri.host, uri.port) do |http|
+          http.request(sub_request)
+        end
 
-    headers = {}
-    sub_response.each_header do |k,v|
-      #headers[k] = v unless k.to_s =~ /cookie|content-length|transfer-encoding/i
-      headers[k] = v unless k.to_s =~ /content-length|transfer-encoding/i
-    end
+        headers = {}
+        sub_response.each_header do |k,v|
+          #headers[k] = v unless k.to_s =~ /cookie|content-length|transfer-encoding/i
+          headers[k] = v unless k.to_s =~ /content-length|transfer-encoding/i
+        end
 
-    [sub_response.code.to_i, headers, [sub_response.read_body]]
+        return [sub_response.code.to_i, headers, [sub_response.read_body]]
+      rescue => e
+        last_exception = e
+        next if last_exception.is_a?(Errno::ECONNREFUSED)
+        break
+      end
+    }
+    raise last_exception
   end
 end
 
@@ -188,4 +199,68 @@ map "http://aod.risingcode.com/" do
   run Proc.new { |env|
     [200, {"Content-Type" => "text/plain"}, [""]]
   }
+end
+
+map "http://centerology.risingcode.com/" do
+  use Rack::Proxy do |req|
+    new_uri = URI.parse(req.url)
+    new_uri.host = "ip-10-152-190-228.ec2.internal"
+    new_uri.port = 5000
+    new_uri
+  end
+
+  run Proc.new { |env|
+    [200, {"Content-Type" => "text/plain"}, [""]]
+  }
+end
+
+map "http://thegame.risingcode.com/" do
+  #use Rack::Deflater
+  run Rack::Directory.new(HOME + "/thegame/public")
+end
+
+map "http://rad.risingcode.com/" do
+  #use Rack::Deflater
+  run Rack::Directory.new(HOME + "/risingcode-rad/public")
+end
+
+map "http://portalbloop.risingcode.com/" do
+  #use Rack::Deflater
+  run Rack::Directory.new(HOME + "/portalbloop/public")
+end
+
+map "http://slide.risingcode.com/" do
+  run Rack::Directory.new(HOME + "/happy-trails-5/public")
+end
+
+map "http://merry-new-year.com/" do
+  use Rack::TripleDubRedirect
+  run Proc.new { |env|
+    [200, {"Content-Type" => "text/plain"}, [""]]
+  }
+end
+
+map "http://www.merry-new-year.com/" do
+  #run Rack::Directory.new(HOME + "/merry-new-year.com/public")
+  #use Rack::Static, {:urls => {"/" => 'index.html'}, :root => HOME + "/merry-new-year.com/public"}
+  #run Proc.new { |env|
+  #  [200, {"Content-Type" => "text/plain"}, [""]]
+  #}
+  #use Rack::URLMap, {"/" => 'index.html'}
+  #run Rack::File.new(HOME + "/merry-new-year.com/public", {:index => HOME + "/merry-new-year.com/public/index.html" })
+  use Rack::Static, :urls => ["/merry-new-year.ogg", "/merry-new-year.gif"],
+    :root => HOME + "/merry-new-year.com/public"
+
+  #map "/" do
+    run lambda { |env|
+    [
+      200, 
+      {
+        'Content-Type'  => 'text/html', 
+        'Cache-Control' => 'public, max-age=86400' 
+      },
+      File.open(HOME + "/merry-new-year.com/public/index.html", File::RDONLY)
+    ]
+  }
+  #end
 end
